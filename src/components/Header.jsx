@@ -6,7 +6,7 @@ import { useAuth } from '../lib/AuthContext'
 import { supabase } from '../lib/supabaseClient'
 
 export default function Header() {
-  const { user } = useAuth()
+  const { user, role } = useAuth()
   const navigate = useNavigate()
 
   const handleSignOut = async () => {
@@ -34,6 +34,7 @@ export default function Header() {
 
         {user && (
           <>
+            {role === 'admin' && <Link to="/admin">Admin panel</Link>}
             <Link to="/dashboard">Dashboard</Link>
             <button onClick={handleSignOut} style={{ cursor: 'pointer' }}>
               Sign out
