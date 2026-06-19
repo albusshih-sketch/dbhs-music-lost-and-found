@@ -24,7 +24,7 @@ export default function Header() {
       background: '#fff'
     }}>
       <Link to="/" style={{ fontWeight: 600, fontSize: '1.1rem', textDecoration: 'none', color: '#1a1a1a' }}>
-        DBHS Lost & Found
+        DBHS Music Lost & Found
       </Link>
 
       <nav style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>

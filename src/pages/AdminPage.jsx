@@ -1,5 +1,7 @@
 // The admin panel - only accessible to users with role = 'admin'.
 // Lets the IT admin see all items across all teachers, and manage teacher accounts.
+// Admins can promote teachers to admin, and demote other admins back to teacher.
+// An admin cannot demote themselves.
 
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -74,14 +76,6 @@ export default function AdminPage() {
       return
     }
 
-    if (!newTeacher.email.endsWith('@dbhs.edu')) {
-      setTeacherError('Email must be a @dbhs.edu address.')
-      return
-    }
-
-    // Create the user in Supabase Auth
-    // Note: in production you'd use the Supabase Admin API for this.
-    // For now we use signUp which sends a confirmation email.
     const { error } = await supabase.auth.signUp({
       email: newTeacher.email,
       password: newTeacher.password
@@ -100,6 +94,44 @@ export default function AdminPage() {
     if (!window.confirm(`Remove teacher account for ${email}?`)) return
     await supabase.from('profiles').delete().eq('id', id)
     fetchAllTeachers()
+  }
+
+  // Promote a teacher to admin
+  async function handlePromote(id, email) {
+    if (!window.confirm(`Promote ${email} to admin? They will have full access to the admin panel.`)) return
+
+    const { error } = await supabase
+      .from('profiles')
+      .update({ role: 'admin' })
+      .eq('id', id)
+
+    if (error) {
+      alert('Could not promote user. Please try again.')
+    } else {
+      fetchAllTeachers()
+    }
+  }
+
+  // Demote an admin back to teacher
+  // An admin cannot demote themselves
+  async function handleDemote(id, email) {
+    if (id === user.id) {
+      alert("You cannot demote yourself. Ask another admin to do this.")
+      return
+    }
+
+    if (!window.confirm(`Demote ${email} back to teacher? They will lose admin access.`)) return
+
+    const { error } = await supabase
+      .from('profiles')
+      .update({ role: 'teacher' })
+      .eq('id', id)
+
+    if (error) {
+      alert('Could not demote user. Please try again.')
+    } else {
+      fetchAllTeachers()
+    }
   }
 
   if (loading) return <p style={{ padding: '2rem' }}>Loading...</p>
@@ -172,7 +204,7 @@ export default function AdminPage() {
             <form onSubmit={handleAddTeacher} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               <input
                 type="email"
-                placeholder="teacher@dbhs.edu"
+                placeholder="email@example.com"
                 value={newTeacher.email}
                 onChange={e => setNewTeacher(t => ({ ...t, email: e.target.value }))}
                 style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid #ccc' }}
@@ -200,23 +232,67 @@ export default function AdminPage() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {teachers.map(t => (
                 <div key={t.id} style={{ display: 'flex', alignItems: 'center', gap: 12, border: '1px solid #e0e0e0', borderRadius: 12, padding: '1rem', background: '#fff' }}>
-                  <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#e6f1fb', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 500, color: '#185fa5', flexShrink: 0 }}>
+                  
+                  {/* Avatar circle with first letter of email */}
+                  <div style={{
+                    width: 36, height: 36, borderRadius: '50%',
+                    background: t.role === 'admin' ? '#e6f1fb' : '#f0f0ee',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontWeight: 500,
+                    color: t.role === 'admin' ? '#185fa5' : '#444',
+                    flexShrink: 0
+                  }}>
                     {t.email[0].toUpperCase()}
                   </div>
+
+                  {/* Email and role */}
                   <div style={{ flex: 1 }}>
                     <p style={{ fontWeight: 500 }}>{t.email}</p>
-                    <p style={{ fontSize: '0.8rem', color: '#999' }}>Role: {t.role}</p>
+                    <p style={{ fontSize: '0.8rem', color: '#999' }}>
+                      Role: {t.role}
+                      {t.id === user.id && ' (you)'}
+                    </p>
                   </div>
-                  {t.role !== 'admin' && (
+
+                  {/* Role badge */}
+                  <span style={{
+                    fontSize: '0.75rem',
+                    padding: '3px 10px',
+                    borderRadius: 99,
+                    background: t.role === 'admin' ? '#e6f1fb' : '#f0f0ee',
+                    color: t.role === 'admin' ? '#185fa5' : '#666'
+                  }}>
+                    {t.role === 'admin' ? 'Admin' : 'Teacher'}
+                  </span>
+
+                  {/* Promote button — only shown for teachers */}
+                  {t.role === 'teacher' && (
+                    <button
+                      onClick={() => handlePromote(t.id, t.email)}
+                      style={{ padding: '6px 12px', borderRadius: 8, cursor: 'pointer', color: '#185fa5', border: '1px solid #b5d4f4', background: '#e6f1fb', whiteSpace: 'nowrap' }}
+                    >
+                      Promote to admin
+                    </button>
+                  )}
+
+                  {/* Demote button — only shown for other admins, not yourself */}
+                  {t.role === 'admin' && t.id !== user.id && (
+                    <button
+                      onClick={() => handleDemote(t.id, t.email)}
+                      style={{ padding: '6px 12px', borderRadius: 8, cursor: 'pointer', color: '#a32d2d', border: '1px solid #f0c0c0', background: '#fcebeb', whiteSpace: 'nowrap' }}
+                    >
+                      Demote to teacher
+                    </button>
+                  )}
+
+                  {/* Remove button — only shown for teachers, not admins */}
+                  {t.role === 'teacher' && (
                     <button
                       onClick={() => handleDeleteTeacher(t.id, t.email)}
                       style={{ padding: '6px 12px', borderRadius: 8, cursor: 'pointer', color: '#a32d2d', border: '1px solid #f0c0c0', background: '#fcebeb' }}
                     >
                       Remove
                     </button>
-                  )}
-                  {t.role === 'admin' && (
-                    <span style={{ fontSize: '0.8rem', color: '#185fa5', padding: '4px 10px', background: '#e6f1fb', borderRadius: 99 }}>Admin</span>
                   )}
                 </div>
               ))}
