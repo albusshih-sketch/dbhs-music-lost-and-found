@@ -1,6 +1,3 @@
-// This page lets teachers and the admin log in using real Supabase authentication.
-// Unlike our earlier prototype, this checks against REAL accounts you create in Supabase.
-
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
@@ -29,46 +26,78 @@ export default function LoginPage() {
   }
 
   return (
-    <main style={{ maxWidth: 400, margin: '4rem auto', padding: '0 1.5rem' }}>
-      <div style={{ border: '1px solid #e0e0e0', borderRadius: 12, padding: '2rem', background: '#fff' }}>
-        <h1 style={{ fontSize: '1.2rem', fontWeight: 500 }}>Staff sign in</h1>
-        <p style={{ fontSize: '0.85rem', color: '#666', marginBottom: '1.5rem' }}>
-          Teachers and admins only.
-        </p>
-
-        <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <div>
-            <label style={{ fontSize: '0.85rem', fontWeight: 500 }}>Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              required
-              style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid #ccc' }}
-            />
+    <div className="login-wrapper">
+      <div className="card" style={{ width: '100%', maxWidth: 420 }}>
+        {/* Card header */}
+        <div style={{
+          background: 'var(--banner-bg)',
+          borderRadius: '12px 12px 0 0',
+          padding: '1.75rem 2rem',
+          borderBottom: '3px solid var(--gold)',
+          textAlign: 'center'
+        }}>
+          <div style={{
+            fontSize: '2rem',
+            marginBottom: '0.5rem',
+            fontFamily: "'Times New Roman', Georgia, serif",
+            color: 'var(--gold)',
+            lineHeight: 1
+          }}>
+            ♩
           </div>
-          <div>
-            <label style={{ fontSize: '0.85rem', fontWeight: 500 }}>Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              required
-              style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid #ccc' }}
-            />
-          </div>
+          <h1 style={{
+            fontFamily: "'Playfair Display', Georgia, serif",
+            color: 'var(--white)',
+            fontSize: '1.2rem',
+            fontWeight: 700,
+            margin: '0 0 4px'
+          }}>
+            Staff Sign In
+          </h1>
+          <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: '0.82rem' }}>
+            DBHS Band — Teachers &amp; Admins Only
+          </p>
+        </div>
 
-          {error && <p style={{ color: 'red', fontSize: '0.85rem' }}>{error}</p>}
+        {/* Form */}
+        <div style={{ padding: '1.75rem 2rem' }}>
+          <form onSubmit={handleLogin} className="form-stack">
+            <div className="form-group">
+              <label className="form-label">Email</label>
+              <input
+                className="form-input"
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                required
+                placeholder="you@example.com"
+              />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Password</label>
+              <input
+                className="form-input"
+                type="password"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                required
+                placeholder="••••••••"
+              />
+            </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            style={{ padding: '10px', borderRadius: 8, background: '#1a1a1a', color: '#fff', border: 'none', cursor: 'pointer' }}
-          >
-            {loading ? 'Signing in...' : 'Sign in'}
-          </button>
-        </form>
+            {error && <p className="msg-error">{error}</p>}
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn btn-primary btn-full"
+              style={{ marginTop: '4px' }}
+            >
+              {loading ? 'Signing in...' : 'Sign In'}
+            </button>
+          </form>
+        </div>
       </div>
-    </main>
+    </div>
   )
 }

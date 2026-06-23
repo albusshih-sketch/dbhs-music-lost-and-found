@@ -1,13 +1,12 @@
-// The navigation bar shown at the top of every page.
-// It changes what buttons it shows depending on whether someone is logged in.
-
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../lib/AuthContext'
 import { supabase } from '../lib/supabaseClient'
+import logo from '../assets/logo.png'
 
 export default function Header() {
   const { user, role } = useAuth()
   const navigate = useNavigate()
+  const { pathname } = useLocation()
 
   const handleSignOut = async () => {
     await supabase.auth.signOut()
@@ -15,32 +14,69 @@ export default function Header() {
   }
 
   return (
-    <header style={{
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      padding: '1rem 1.5rem',
-      borderBottom: '1px solid #e0e0e0',
-      background: '#fff'
-    }}>
-      <Link to="/" style={{ fontWeight: 600, fontSize: '1.1rem', textDecoration: 'none', color: '#1a1a1a' }}>
-        DBHS Music Lost & Found
-      </Link>
+    <header>
+      {/* ── Banner ── */}
+      <div className="site-banner">
+        <div className="site-banner__inner">
+          <div className="site-banner__logo">
+            <img src={logo} alt="DBHS Logo" style={{ height: '82px', width: 'auto' }} />
+          </div>
+          <div>
+            <h1 className="site-banner__title">DBHS Music Lost and Found</h1>
+            <span className="site-banner__subtitle">
+              Diamond Bar High School Instrumental Music Program
+            </span>
+          </div>
+        </div>
+      </div>
 
-      <nav style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-        <Link to="/">Browse</Link>
+      {/* ── Nav bar ── */}
+      <nav className="site-nav">
+        <div className="site-nav__inner">
+          <div className="site-nav__links">
+            <Link
+              to="/"
+              className={`site-nav__item${pathname === '/' ? ' active' : ''}`}
+            >
+              🏠 Browse
+            </Link>
 
-        {!user && <Link to="/login">Staff login</Link>}
+            {user && (
+              <Link
+                to="/dashboard"
+                className={`site-nav__item${pathname === '/dashboard' ? ' active' : ''}`}
+              >
+                📋 Dashboard
+              </Link>
+            )}
 
-        {user && (
-          <>
-            {role === 'admin' && <Link to="/admin">Admin panel</Link>}
-            <Link to="/dashboard">Dashboard</Link>
-            <button onClick={handleSignOut} style={{ cursor: 'pointer' }}>
-              Sign out
-            </button>
-          </>
-        )}
+            {role === 'admin' && (
+              <Link
+                to="/admin"
+                className={`site-nav__item${pathname === '/admin' ? ' active' : ''}`}
+              >
+                🛡️ Admin Panel
+              </Link>
+            )}
+
+            {!user && (
+              <Link
+                to="/login"
+                className={`site-nav__item${pathname === '/login' ? ' active' : ''}`}
+              >
+                🔑 Staff Login
+              </Link>
+            )}
+          </div>
+
+          {user && (
+            <div className="site-nav__right">
+              <button className="site-nav__signout" onClick={handleSignOut}>
+                ↪ Sign Out
+              </button>
+            </div>
+          )}
+        </div>
       </nav>
     </header>
   )

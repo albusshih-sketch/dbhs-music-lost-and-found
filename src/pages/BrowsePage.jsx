@@ -1,8 +1,13 @@
-// This is the page every student sees - no login required.
-// It pulls all items from the Supabase "items" table and displays them as cards.
-
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
+import Sidebar from '../components/Sidebar'
+
+function isWithinDays(dateStr, days) {
+  const date = new Date(dateStr)
+  const cutoff = new Date()
+  cutoff.setDate(cutoff.getDate() - days)
+  return date >= cutoff
+}
 
 export default function BrowsePage() {
   const [items, setItems] = useState([])
@@ -16,7 +21,6 @@ export default function BrowsePage() {
 
   async function fetchItems() {
     setLoading(true)
-    // .order() shows newest items first, like a feed
     const { data, error } = await supabase
       .from('items')
       .select('*')
@@ -37,47 +41,89 @@ export default function BrowsePage() {
     item.location.toLowerCase().includes(search.toLowerCase())
   )
 
+  const newThisWeek = items.filter(i => isWithinDays(i.created_at, 7)).length
+
+  const stats = [
+    { icon: '📦', label: 'Total Items', value: items.length },
+    { icon: '📅', label: 'New This Week', value: newThisWeek },
+  ]
+
   return (
-    <main style={{ maxWidth: 1000, margin: '0 auto', padding: '2rem 1.5rem' }}>
-      <h1 style={{ fontSize: '1.5rem', fontWeight: 500 }}>Lost items board</h1>
-      <p style={{ color: '#666', marginBottom: '1.5rem' }}>
-        See something that's yours? Visit the location listed to retrieve it in person.
-      </p>
+    <div className="page-wrapper">
+      <div className="content-layout">
+        {/* Sidebar */}
+        <Sidebar stats={stats} />
 
-      <input
-        type="text"
-        placeholder="Search by name, description, or location..."
-        value={search}
-        onChange={e => setSearch(e.target.value)}
-        style={{ width: '100%', padding: '10px 14px', marginBottom: '1.5rem', borderRadius: 8, border: '1px solid #ccc' }}
-      />
-
-      {loading && <p>Loading items...</p>}
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-
-      {!loading && !error && filtered.length === 0 && (
-        <p style={{ color: '#666', textAlign: 'center', padding: '3rem 0' }}>
-          No items match your search.
-        </p>
-      )}
-
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 16 }}>
-        {filtered.map(item => (
-          <article key={item.id} style={{ border: '1px solid #e0e0e0', borderRadius: 12, overflow: 'hidden', background: '#fff' }}>
-            <div style={{ width: '100%', height: 160, background: '#f0f0f0' }}>
-              {item.image_url && (
-                <img src={item.image_url} alt={item.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              )}
+        {/* Main content */}
+        <main>
+          {/* Welcome card */}
+          <div className="welcome-card">
+            <div className="welcome-card__content">
+              <h2>Welcome to DBHS Music Lost and Found</h2>
+              <p>Browse and recover lost items from the Instrumental Music Program.</p>
             </div>
-            <div style={{ padding: '1rem' }}>
-              <h2 style={{ fontSize: '1rem', fontWeight: 500 }}>{item.title}</h2>
-              <p style={{ fontSize: '0.85rem', color: '#666', margin: '6px 0' }}>{item.description}</p>
-              <p style={{ fontSize: '0.8rem', color: '#999' }}>📍 {item.location}</p>
-              <p style={{ fontSize: '0.8rem', color: '#999' }}>📅 Found {new Date(item.date_found).toLocaleDateString()}</p>
+            <div className="welcome-card__deco" aria-hidden="true">♩ ♪ ♫</div>
+          </div>
+
+          {/* Section header + search */}
+          <div className="section-row">
+            <h2 className="section-title">Recently Posted Items</h2>
+          </div>
+
+          <div className="search-bar">
+            <span className="search-bar__icon">🔍</span>
+            <input
+              type="text"
+              placeholder="Search by name, description, or location..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+            />
+          </div>
+
+          {loading && <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Loading items...</p>}
+          {error && <p className="msg-error">{error}</p>}
+
+          {!loading && !error && filtered.length === 0 && (
+            <div className="empty-state">
+              <div className="empty-state__icon">📭</div>
+              <p>{search ? 'No items match your search.' : 'No items have been posted yet.'}</p>
             </div>
-          </article>
-        ))}
+          )}
+
+          {/* Items grid */}
+          <div className="items-grid">
+            {filtered.map(item => (
+              <article key={item.id} className="item-card">
+                <div className="item-card__img-wrap">
+                  {item.image_url
+                    ? <img src={item.image_url} alt={item.title} />
+                    : (
+                      <div className="item-card__placeholder">📦</div>
+                    )
+                  }
+                  <span className="item-card__date">
+                    {new Date(item.date_found).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                  </span>
+                </div>
+                <div className="item-card__body">
+                  <p className="item-card__title">{item.title}</p>
+                  <p className="item-card__location">📍 {item.location}</p>
+                  <p className="item-card__desc">{item.description}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+
+          {/* Info banner */}
+          <div className="info-banner">
+            <span className="info-banner__icon">ℹ️</span>
+            <div className="info-banner__text">
+              <h3>Have you lost something?</h3>
+              <p>Check the list of found items or contact a staff member in the Instrumental Music Program.</p>
+            </div>
+          </div>
+        </main>
       </div>
-    </main>
+    </div>
   )
 }
