@@ -207,24 +207,26 @@ export default function AdminPage() {
                           </p>
                           <p className="item-row__meta">Role: {t.role}</p>
                         </div>
-                        <span className={`badge badge-${t.role}`}>
-                          {t.role === 'admin' ? 'Admin' : 'Teacher'}
-                        </span>
-                        {t.role === 'teacher' && (
-                          <button onClick={() => handlePromote(t.id, t.email)} className="btn btn-sm btn-blue">
-                            Promote to Admin
-                          </button>
-                        )}
-                        {t.role === 'admin' && t.id !== user.id && (
-                          <button onClick={() => handleDemote(t.id, t.email)} className="btn btn-sm btn-danger">
-                            Demote to Teacher
-                          </button>
-                        )}
-                        {t.role === 'teacher' && (
-                          <button onClick={() => handleDeleteTeacher(t.id, t.email)} className="btn btn-sm btn-danger">
-                            Remove
-                          </button>
-                        )}
+                        <div className="item-row__actions">
+                          <span className={`badge badge-${t.role}`}>
+                            {t.role === 'admin' ? 'Admin' : 'Teacher'}
+                          </span>
+                          {t.role === 'teacher' && (
+                            <button onClick={() => handlePromote(t.id, t.email)} className="btn btn-sm btn-blue">
+                              Promote to Admin
+                            </button>
+                          )}
+                          {t.role === 'admin' && t.id !== user.id && (
+                            <button onClick={() => handleDemote(t.id, t.email)} className="btn btn-sm btn-danger">
+                              Demote to Teacher
+                            </button>
+                          )}
+                          {t.role === 'teacher' && (
+                            <button onClick={() => handleDeleteTeacher(t.id, t.email)} className="btn btn-sm btn-danger">
+                              Remove
+                            </button>
+                          )}
+                        </div>
                       </div>
                     ))}
                   </div>

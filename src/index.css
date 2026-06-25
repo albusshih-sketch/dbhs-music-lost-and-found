@@ -299,6 +299,20 @@ p { margin: 0; }
     padding: 5px 10px;
     font-size: 0.76rem;
   }
+
+  .page-wrapper {
+    padding: 1.25rem 1rem;
+  }
+
+  /* Let item rows wrap so the actions group moves to its own second line */
+  .item-row {
+    flex-wrap: wrap;
+  }
+
+  .item-row__actions {
+    flex-basis: 100%;
+    justify-content: flex-end;
+  }
 }
 
 /* ── Page layout ── */
@@ -867,6 +881,13 @@ p { margin: 0; }
   font-size: 0.78rem;
   color: var(--text-muted);
   margin-top: 2px;
+}
+
+.item-row__actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
 }
 
 /* ── Tabs ── */
