@@ -1,7 +1,6 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../lib/AuthContext'
 import { supabase } from '../lib/supabaseClient'
-import logo from '../assets/logo.png'
 import InstallButton from './InstallButton'
 
 export default function Header() {
@@ -20,7 +19,7 @@ export default function Header() {
       <div className="site-banner">
         <div className="site-banner__inner">
           <div className="site-banner__logo">
-            <img src={logo} alt="DBHS Logo" style={{ height: '82px', width: 'auto' }} />
+            <img src="/logo.png" alt="DBHS Logo" style={{ height: '82px', width: 'auto' }} />
           </div>
           <div>
             <h1 className="site-banner__title">DBHS Music Lost and Found</h1>
