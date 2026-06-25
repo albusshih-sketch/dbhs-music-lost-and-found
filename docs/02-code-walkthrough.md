@@ -18,11 +18,15 @@ dbhs-lost-and-found/
       AuthContext.jsx      ← tracks who is logged in + their role
     components/
       Header.jsx           ← navigation bar
+      InstallButton.jsx    ← PWA install prompt (Android + iOS)
     pages/
       BrowsePage.jsx       ← public student view
       LoginPage.jsx        ← teacher/admin login
       DashboardPage.jsx    ← teacher post/delete interface
       AdminPage.jsx        ← admin management panel
+  public/
+    manifest.json          ← web app manifest (makes site installable as PWA)
+    sw.js                  ← service worker (required for install prompt)
   .env                     ← secret keys (never uploaded to GitHub)
   package.json             ← list of all installed packages
   vite.config.js           ← Vite configuration
@@ -55,6 +59,29 @@ ReactDOM.createRoot(document.getElementById('root')).render(<App />)
 ```
 
 Think of this as the ignition key — it starts the engine (React) and hands control to `App.jsx`.
+
+It also registers the service worker (`public/sw.js`) on load. The service worker is required for the browser to offer the "install app" prompt.
+
+---
+
+### `public/manifest.json`
+A JSON file that tells the browser this site can be installed as a Progressive Web App (PWA). It declares the app's name, short name, icon, theme color, and that it should open in `standalone` mode (no browser address bar) when installed.
+
+Browsers read this file automatically when the page loads — no JavaScript needed.
+
+---
+
+### `public/sw.js`
+A service worker — a small script the browser runs in the background, separate from the main page. This one is minimal: it activates immediately and passes all network requests through normally (no offline caching).
+
+Its main job here is to satisfy the browser's requirement for a registered service worker before it will show the install prompt. Without it, the `beforeinstallprompt` event never fires.
+
+---
+
+### `src/components/InstallButton.jsx`
+Listens for the browser's `beforeinstallprompt` event and shows a gold "📲 Install App" button in the nav bar when installation is available.
+
+On **Android/Chrome/Edge**, clicking the button triggers the native browser install dialog. On **iOS Safari**, there is no automatic install event — instead, clicking shows a small tooltip explaining how to use "Add to Home Screen" from the Share menu. If the app is already installed, the button hides itself.
 
 ---
 
@@ -110,6 +137,8 @@ It uses `useAuth()` to read `user` and `role`, then conditionally renders differ
 - Nobody logged in → shows "Staff login" link
 - Logged in as teacher → shows "Dashboard" and "Sign out"
 - Logged in as admin → shows "Admin panel", "Dashboard", and "Sign out"
+
+It also renders `<InstallButton />` in the nav bar at all times (the component hides itself when installation isn't available or the app is already installed).
 
 `handleSignOut` calls `supabase.auth.signOut()` which clears the session, then redirects back to the home page.
 

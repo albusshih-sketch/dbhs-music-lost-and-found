@@ -1,16 +1,49 @@
-# React + Vite
+# DBHS Music Lost and Found
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A web app for the Diamond Bar High School Instrumental Music Program to log and browse lost-and-found items. Staff can submit and manage items; students and parents can browse what's been found.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **Browse page** — public view of all current lost-and-found items with search and filtering
+- **Staff dashboard** — authenticated staff can submit new items with photos and descriptions
+- **Admin panel** — role-based admin access to manage all listings and users
+- **PWA install** — visitors can install the site as an app on their phone directly from the browser (no app store required)
 
-## React Compiler
+## Tech stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- [React](https://react.dev) + [Vite](https://vite.dev)
+- [Supabase](https://supabase.com) — database, auth, and image storage
+- [React Router](https://reactrouter.com) — client-side routing
+- Deployed on [Vercel](https://vercel.com)
 
-## Expanding the ESLint configuration
+## Local development
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+1. Clone the repo
+2. Install dependencies: `npm install`
+3. Create a `.env` file with your Supabase credentials:
+   ```
+   VITE_SUPABASE_URL=your_supabase_url
+   VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+   ```
+4. Start the dev server: `npm run dev`
+
+## Project structure
+
+```
+src/
+  components/
+    Header.jsx        # Top nav bar with install button
+    InstallButton.jsx # PWA install prompt (Android + iOS)
+    Sidebar.jsx       # Filter sidebar on browse page
+  pages/
+    BrowsePage.jsx    # Public item gallery
+    DashboardPage.jsx # Staff item submission
+    AdminPage.jsx     # Admin management panel
+    LoginPage.jsx     # Staff login
+  lib/
+    supabaseClient.js # Supabase client singleton
+    AuthContext.jsx   # Auth state provider
+public/
+  manifest.json       # Web app manifest (PWA)
+  sw.js               # Service worker (enables install prompt)
+```

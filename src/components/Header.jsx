@@ -2,6 +2,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../lib/AuthContext'
 import { supabase } from '../lib/supabaseClient'
 import logo from '../assets/logo.png'
+import InstallButton from './InstallButton'
 
 export default function Header() {
   const { user, role } = useAuth()
@@ -69,13 +70,14 @@ export default function Header() {
             )}
           </div>
 
-          {user && (
-            <div className="site-nav__right">
+          <div className="site-nav__right">
+            <InstallButton />
+            {user && (
               <button className="site-nav__signout" onClick={handleSignOut}>
                 ↪ Sign Out
               </button>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </nav>
     </header>

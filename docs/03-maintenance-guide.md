@@ -201,17 +201,26 @@ Estimated build time for a full UI refresh: 2–3 days.
 
 ---
 
-## 10. How to Add Mobile App Support (PWA)
+## 10. Mobile App Support (PWA) — Already Implemented
 
-The website already works in mobile browsers. To make it feel more like a native app (icon on home screen, etc.):
+The site is already a Progressive Web App. No additional steps needed.
 
-```bash
-npm install vite-plugin-pwa
-```
+**What's in place:**
+- `public/manifest.json` — declares the app name, icon, and theme color
+- `public/sw.js` — service worker that enables the install prompt
+- `src/components/InstallButton.jsx` — gold "📲 Install App" button in the nav bar
 
-Update `vite.config.js` to include the PWA plugin with your app name and icons. Teachers can then tap Share → "Add to Home Screen" on their phone. It appears as an app icon and opens without the browser address bar, making photo uploads feel more natural.
+**How teachers install it on Android:**
+1. Open the site in Chrome
+2. Tap the "📲 Install App" button in the nav bar
+3. Confirm the install dialog — the app appears on the home screen
 
-Estimated build time: half a day.
+**How teachers install it on iOS (Safari):**
+1. Open the site in Safari
+2. Tap the "📲 Install App" button
+3. Follow the tooltip: tap the Share button (↑), then "Add to Home Screen"
+
+Once installed, the app opens without a browser address bar, like a native app.
 
 ---
 
@@ -281,10 +290,10 @@ Available on Supabase Pro plan ($25/month). Recommended if this project scales b
 - **Item categories:** Add a category dropdown (Brass, Woodwind, Percussion, Strings, Accessories, Other) to make browsing easier for music students.
 - **SSO / Google Sign-In:** Allow teachers to log in with their school Google accounts — no passwords to manage.
 - **Dark mode:** A simple CSS variable swap — low effort, high impact.
-- **PWA support:** Makes the site feel like a native app on mobile — important for teachers uploading photos from their phones.
+- **PWA support:** ✅ Already implemented — install button is live in the nav bar.
 - **Analytics:** Show the admin how many items are posted per month, average time before removal, most common item types.
 
 ---
 
 *This document should be updated whenever significant changes are made to the project.*  
-*Last updated: June 2026*
+*Last updated: June 2026 — Added PWA install button; deployed to Vercel*

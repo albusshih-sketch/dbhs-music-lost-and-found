@@ -4,7 +4,7 @@
 **Intern:** Albus Shih  
 **Supervisor:** IT Admin, Diamond Bar High School  
 **Started:** June 2026  
-**Stack:** React + Vite, Supabase, Vercel (deployment pending)
+**Stack:** React + Vite, Supabase, Vercel
 
 ---
 
@@ -141,11 +141,29 @@ The head band director is the primary admin, but a school administrator in the a
   2. Supabase Dashboard → Authentication → Users → Delete (removes login credentials)
 - Long-term fix noted: build a Supabase Edge Function to handle Auth deletion securely
 
+### Phase 10 — PWA Install Support
+- Added `public/manifest.json` — web app manifest declaring app name, icon, theme color, and standalone display mode
+- Added `public/sw.js` — minimal service worker required for the browser install prompt to fire
+- Registered service worker in `src/main.jsx` on page load
+- Created `src/components/InstallButton.jsx`:
+  - On Android/Chrome/Edge: listens for `beforeinstallprompt`, shows a gold "📲 Install App" button in the nav bar, triggers the native install dialog on click
+  - On iOS Safari: shows the same button with a tooltip guiding users to use Share → "Add to Home Screen"
+  - Hides itself if the app is already installed
+- Added `InstallButton` to `Header.jsx` nav bar (always visible, self-hides when not needed)
+- Added CSS for `.site-nav__install` and `.install-ios-hint` tooltip
+- Updated `index.html`: linked manifest, added `theme-color` and Apple PWA meta tags, updated page title to "DBHS Music Lost and Found"
+- Updated `README.md` with full project documentation (replaced default Vite template boilerplate)
+
+### Phase 11 — Vercel Deployment
+- Deployed to Vercel via GitHub integration (`albusshih-sketch/dbhs-lost-and-found`)
+- Added `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` as environment variables in Vercel project settings
+- Future pushes to `master` automatically rebuild and redeploy the live site
+
 ---
 
 ## Current Status
-The application is fully functional locally at `http://localhost:5173`.  
-Next step: deploy to Vercel for a live public URL.
+The application is live on Vercel. Any push to `master` on GitHub automatically triggers a redeployment.  
+PWA install is available: users on Android can tap "📲 Install App" in the nav bar; iOS users see instructions for "Add to Home Screen."
 
 ---
 

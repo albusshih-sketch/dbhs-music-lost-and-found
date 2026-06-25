@@ -202,6 +202,56 @@ p { margin: 0; }
   color: rgba(255,255,255,0.88);
 }
 
+.site-nav__install {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 13px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #1A1208;
+  background: var(--gold);
+  border: none;
+  cursor: pointer;
+  border-radius: var(--radius);
+  font-family: inherit;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+
+.site-nav__install:hover {
+  background: var(--gold-light);
+}
+
+.install-ios-hint {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: 0.875rem 1rem;
+  font-size: 0.82rem;
+  color: var(--text);
+  line-height: 1.5;
+  width: 230px;
+  z-index: 100;
+}
+
+.install-ios-hint::before {
+  content: '';
+  position: absolute;
+  top: -6px;
+  right: 20px;
+  width: 10px;
+  height: 10px;
+  background: var(--white);
+  border-left: 1px solid var(--border);
+  border-top: 1px solid var(--border);
+  transform: rotate(45deg);
+}
+
 /* ── Page layout ── */
 
 .page-wrapper {

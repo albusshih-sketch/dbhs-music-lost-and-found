@@ -1,0 +1,17 @@
+{
+  "name": "DBHS Music Lost and Found",
+  "short_name": "DBHS L&F",
+  "description": "Diamond Bar High School Instrumental Music Program Lost and Found",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#120E07",
+  "theme_color": "#120E07",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
