@@ -18,15 +18,17 @@ dbhs-lost-and-found/
       AuthContext.jsx      ← tracks who is logged in + their role
     components/
       Header.jsx           ← navigation bar
+      Sidebar.jsx          ← left sidebar with nav + Quick Stats (used on content pages)
       InstallButton.jsx    ← PWA install prompt (Android + iOS)
     pages/
-      BrowsePage.jsx       ← public student view
+      BrowsePage.jsx       ← public student view + claim flow
       LoginPage.jsx        ← teacher/admin login
-      DashboardPage.jsx    ← teacher post/delete interface
+      DashboardPage.jsx    ← teacher post/delete + pending claims interface
       AdminPage.jsx        ← admin management panel
   public/
     manifest.json          ← web app manifest (makes site installable as PWA)
     sw.js                  ← service worker (required for install prompt)
+    vercel.json            ← rewrites all routes to index.html for SPA routing
   .env                     ← secret keys (never uploaded to GitHub)
   package.json             ← list of all installed packages
   vite.config.js           ← Vite configuration
@@ -130,6 +132,14 @@ The `useEffect` hook runs once on app start and does two things:
 
 ---
 
+### `src/components/Sidebar.jsx`
+A reusable left-column sidebar rendered on BrowsePage, DashboardPage, and AdminPage. It always shows a Navigation card (same links as the header, context-aware based on auth state and role). It optionally shows a Quick Stats card when the parent page passes in a `stats` prop — an array of `{ icon, label, value }` objects. Each page computes its own stats before rendering:
+- BrowsePage passes: Total Items, New This Week
+- DashboardPage passes: Your Items, Pending Claims
+- AdminPage passes: Total Items, Pending Claims, Staff Accounts
+
+---
+
 ### `src/components/Header.jsx`
 The navigation bar shown at the top of every page. It's a component rather than a page because it's reused across all pages rather than having its own route.
 
@@ -157,7 +167,16 @@ In plain English: "Give me all rows from the items table, newest first."
 
 Results are stored in the `items` state variable. React automatically re-renders whenever `items` changes, so cards appear as soon as data arrives.
 
+The same `useEffect` also opens a **Supabase Realtime channel** (`items-realtime`) that listens for any change on the `items` table. Whenever an item is added, edited, or deleted by staff, `fetchItems()` runs again automatically — the browse grid stays up to date without the student refreshing the page. The channel is cleaned up when the component unmounts.
+
 The search bar filters the `items` array in real time using JavaScript's `.filter()` method — checking if the search term appears in the title, description, or location. This filtering happens entirely in the browser with no new database queries.
+
+**Claim flow:** Each item card checks two conditions to decide what to show at the bottom:
+- `item.claimable === true` and `item.claimed_by` is null → shows a gold "Claim This Item" button
+- `item.claimable === false` and unclaimed → shows a "Contact staff to claim" message
+- `item.claimed_by` is set → item card grays out, shows a red "Claimed" badge over the image and "Claimed by [name]" in the body
+
+When a student clicks "Claim This Item," a small inline form appears asking for their name. On submit, `claimed_by` and `claimed_at` are written to that item's row. Only one item can be in the "claiming" state at a time (tracked by `claimingId` state).
 
 ---
 
@@ -177,7 +196,7 @@ Passwords are never stored by us — Supabase handles all password hashing and v
 ---
 
 ### `src/pages/DashboardPage.jsx`
-The teacher's workspace. Two main features: posting items and deleting items.
+The teacher's workspace. Main features: posting items, managing their claimable toggle, deleting items, and reviewing pending claims.
 
 **Fetching items:**
 ```js
@@ -185,11 +204,27 @@ supabase.from('items').select('*').eq('posted_by', user.email)
 ```
 `.eq('posted_by', user.email)` means "only give me rows where posted_by matches my email." Teachers only see their own items — they can't see or delete each other's posts.
 
+The dashboard also subscribes to a Supabase Realtime channel (`dashboard-items-realtime`) so both the posted items list and the pending claims list stay live without manual refresh.
+
 **Posting a new item (two-step process):**
 1. If a photo was selected, upload it to Supabase Storage first. Storage returns a public URL.
 2. Insert a new row into the `items` table, including the image URL from step 1.
 
 The form uses controlled inputs — each field's value is stored in a `form` state object, updated on every keystroke. When submitted, we read from that state object to build the database insert.
+
+**Claimable toggle:**
+Each item row in the dashboard has a "Claims On / Claims Off" pill toggle. Clicking it flips the `claimable` boolean on that item row:
+```js
+supabase.from('items').update({ claimable: !item.claimable }).eq('id', item.id)
+```
+When on (green), students on the browse page see the "Claim This Item" button. When off (gray), they see "Contact staff to claim."
+
+**Pending Claims section:**
+At the top of the dashboard (above the posted items list), a "Pending Claims" section appears whenever any item has `claimed_by` set. This is fetched with:
+```js
+supabase.from('items').select('*').not('claimed_by', 'is', null)
+```
+Note: this fetches claims across all staff — any teacher can confirm any pickup. Each row shows who claimed it and when. "Confirm Gone" deletes the item, confirming physical handoff.
 
 **Deleting an item:**
 ```js
@@ -254,6 +289,9 @@ The "Remove" button in the Admin panel only deletes the teacher's row from the `
 | image_url | text | Public URL of the uploaded photo |
 | posted_by | text | Email of the teacher who posted it |
 | created_at | timestamp | Auto-set when row is created |
+| claimable | boolean | Staff toggle — whether students can claim online |
+| claimed_by | text | Name submitted by the student who claimed it (null = unclaimed) |
+| claimed_at | timestamp | When the claim was submitted |
 
 ### `profiles` table
 | Column | Type | Purpose |
@@ -291,6 +329,7 @@ The "Remove" button in the Admin panel only deletes the teacher's row from the `
 | Trigger | A database rule that runs automatically when something happens |
 | Route guard | Code that redirects unauthorized users away from protected pages |
 | Controlled input | A form field whose value is stored in React state |
+| Realtime channel | A Supabase WebSocket subscription that pushes database changes to the browser live |
 
 ---
 

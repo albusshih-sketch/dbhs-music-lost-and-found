@@ -29,11 +29,14 @@ An initial proposal for a school-wide Lost & Found was reviewed and determined t
 
 ## Decision Log
 
-### Why no "claim" button for students?
-A student could falsely claim an item online with no way to verify. Physical verification (showing up in person, describing the item) is safer and already natural in a school environment. The website helps students *find* their item — the actual handoff stays in person.
+### Why no "claim" button for students? *(original decision — later revised)*
+Originally, a student falsely claiming an item online with no way to verify was the concern. Physical verification (showing up in person, describing the item) is safer and already natural in a school environment.
+
+### Why add a claim button after all? *(revised decision)*
+A staff-controlled `claimable` toggle was added so teachers decide per-item whether online claiming is enabled. When on, students can submit their name to claim an item. The item shows as "Claimed" publicly and appears in the staff dashboard's Pending Claims list. Staff still physically verify and hand off the item — they confirm pickup via "Confirm Gone" which deletes the item. This keeps a human in the loop while reducing the volume of "is my item there?" walk-ins.
 
 ### Why manual deletion by teachers instead of auto-deletion?
-Auto-deleting items based on a student's claim alone removes the human verification step. Teachers delete items manually when they physically hand the item over. This keeps a human in the loop.
+Auto-deleting items based on a student's claim alone removes the human verification step. Teachers delete items manually (via "Confirm Gone") when they physically hand the item over. This keeps a human in the loop.
 
 ### Why no student login?
 Requiring students to log in adds friction and raises privacy concerns. Since students only need to view items, requiring login is unnecessary. Students browse anonymously.
@@ -157,13 +160,27 @@ The head band director is the primary admin, but a school administrator in the a
 ### Phase 11 — Vercel Deployment
 - Deployed to Vercel via GitHub integration (`albusshih-sketch/dbhs-lost-and-found`)
 - Added `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` as environment variables in Vercel project settings
+- Added `vercel.json` to rewrite all routes to `/index.html`, fixing 404 errors on page reload for SPA routes
 - Future pushes to `master` automatically rebuild and redeploy the live site
+
+### Phase 12 — Realtime Subscriptions
+- Added Supabase Realtime channel (`items-realtime`) to `BrowsePage.jsx` — the browse grid now updates live whenever any item is added, edited, or deleted, without requiring a page refresh
+- Added a second channel (`dashboard-items-realtime`) to `DashboardPage.jsx` for the same effect on the staff dashboard
+
+### Phase 13 — Claim Feature & Sidebar
+- Added `claimable` (boolean), `claimed_by` (text), and `claimed_at` (timestamp) columns to the `items` table
+- Added per-item "Claims On/Off" toggle in `DashboardPage.jsx` — staff control whether online claiming is enabled for each item
+- Added claim flow to `BrowsePage.jsx`: when `claimable` is true and unclaimed, a "Claim This Item" button appears; student enters their name and submits; `claimed_by` and `claimed_at` are set; item shows "Claimed" badge and grays out
+- Added Pending Claims section to `DashboardPage.jsx` — shows all items where `claimed_by` is set, with a "Confirm Gone" button that deletes the item after physical handoff
+- Admin panel updated: claimed items highlighted in the items list with claim details and "Confirm Gone" option
+- Added `src/components/Sidebar.jsx` — a reusable left-column sidebar used on all three protected/content pages, containing a navigation card and a context-specific Quick Stats card
 
 ---
 
 ## Current Status
 The application is live on Vercel. Any push to `master` on GitHub automatically triggers a redeployment.  
-PWA install is available: users on Android can tap "📲 Install App" in the nav bar; iOS users see instructions for "Add to Home Screen."
+PWA install is available: users on Android can tap "📲 Install App" in the nav bar; iOS users see instructions for "Add to Home Screen."  
+The claim feature is live: staff toggle claimable per item; students can submit claims online; staff confirm pickup from the Pending Claims dashboard.
 
 ---
 

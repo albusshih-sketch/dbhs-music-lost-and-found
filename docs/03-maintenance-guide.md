@@ -284,16 +284,19 @@ Available on Supabase Pro plan ($25/month). Recommended if this project scales b
 
 ## 13. Future Features to Consider
 
-- **Item status (claimed/unclaimed):** Add a `status` column and let teachers mark items as claimed rather than deleting them, preserving a history of found items.
+- **Item status history:** Currently items are deleted when picked up ("Confirm Gone"). A future enhancement could soft-delete them (add a `status` column: active/resolved) to preserve a history of all found items over time.
 - **Edge Function for teacher deletion:** A secure server-side Supabase function that deletes both the profile and Auth account in one step from the Admin panel, eliminating the two-step manual process.
 - **Email notifications:** When an item is posted, automatically notify subscribed students via email using Supabase Edge Functions + a mailing service like Resend.
 - **Item categories:** Add a category dropdown (Brass, Woodwind, Percussion, Strings, Accessories, Other) to make browsing easier for music students.
 - **SSO / Google Sign-In:** Allow teachers to log in with their school Google accounts — no passwords to manage.
 - **Dark mode:** A simple CSS variable swap — low effort, high impact.
 - **PWA support:** ✅ Already implemented — install button is live in the nav bar.
+- **Online claim flow:** ✅ Already implemented — staff toggle claimability per item; students submit their name; staff confirm pickup from the Pending Claims dashboard.
+- **Realtime updates:** ✅ Already implemented — browse page and dashboard update live via Supabase Realtime channels.
+- **Storage cleanup:** When an item with an image is deleted, the image file remains in the `item-images` Storage bucket. A future edge function or cron job could clean up orphaned images.
 - **Analytics:** Show the admin how many items are posted per month, average time before removal, most common item types.
 
 ---
 
 *This document should be updated whenever significant changes are made to the project.*  
-*Last updated: June 2026 — Added PWA install button; deployed to Vercel*
+*Last updated: June 2026 — Added claim feature (claimable toggle, pending claims dashboard, "Confirm Gone"); added Supabase Realtime subscriptions to browse page and dashboard; deployed to Vercel*
