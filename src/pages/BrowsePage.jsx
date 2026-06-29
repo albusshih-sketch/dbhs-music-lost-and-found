@@ -14,6 +14,10 @@ export default function BrowsePage() {
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [claimingId, setClaimingId] = useState(null)
+  const [claimName, setClaimName] = useState('')
+  const [claimLoading, setClaimLoading] = useState(false)
+  const [claimError, setClaimError] = useState('')
 
   useEffect(() => {
     fetchItems()
@@ -44,6 +48,26 @@ export default function BrowsePage() {
     setLoading(false)
   }
 
+  async function handleClaim(item) {
+    if (!claimName.trim()) {
+      setClaimError('Please enter your name.')
+      return
+    }
+    setClaimLoading(true)
+    const { error } = await supabase
+      .from('items')
+      .update({ claimed_by: claimName.trim(), claimed_at: new Date().toISOString() })
+      .eq('id', item.id)
+    setClaimLoading(false)
+    if (error) {
+      setClaimError('Could not submit claim. Please try again.')
+    } else {
+      setClaimingId(null)
+      setClaimName('')
+      setClaimError('')
+    }
+  }
+
   const filtered = items.filter(item =>
     item.title.toLowerCase().includes(search.toLowerCase()) ||
     item.description.toLowerCase().includes(search.toLowerCase()) ||
@@ -60,12 +84,9 @@ export default function BrowsePage() {
   return (
     <div className="page-wrapper">
       <div className="content-layout">
-        {/* Sidebar */}
         <Sidebar stats={stats} />
 
-        {/* Main content */}
         <main>
-          {/* Welcome card */}
           <div className="welcome-card">
             <div className="welcome-card__content">
               <h2>Welcome to DBHS Music Lost and Found</h2>
@@ -74,7 +95,6 @@ export default function BrowsePage() {
             <div className="welcome-card__deco" aria-hidden="true">♩ ♪ ♫</div>
           </div>
 
-          {/* Section header + search */}
           <div className="section-row">
             <h2 className="section-title">Recently Posted Items</h2>
           </div>
@@ -99,31 +119,75 @@ export default function BrowsePage() {
             </div>
           )}
 
-          {/* Items grid */}
           <div className="items-grid">
             {filtered.map(item => (
-              <article key={item.id} className="item-card">
+              <article key={item.id} className={`item-card${item.claimed_by ? ' item-card--claimed' : ''}`}>
                 <div className="item-card__img-wrap">
                   {item.image_url
                     ? <img src={item.image_url} alt={item.title} />
-                    : (
-                      <div className="item-card__placeholder">📦</div>
-                    )
+                    : <div className="item-card__placeholder">📦</div>
                   }
                   <span className="item-card__date">
                     {new Date(item.date_found).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                   </span>
+                  {item.claimed_by && (
+                    <span className="item-card__claimed-badge">Claimed</span>
+                  )}
                 </div>
                 <div className="item-card__body">
                   <p className="item-card__title">{item.title}</p>
                   <p className="item-card__location">📍 {item.location}</p>
                   <p className="item-card__desc">{item.description}</p>
+                  {item.claimed_by && (
+                    <p className="item-card__claimed-by">Claimed by {item.claimed_by}</p>
+                  )}
                 </div>
+
+                {!item.claimed_by && item.claimable && claimingId !== item.id && (
+                  <button
+                    className="item-card__claim-btn"
+                    onClick={() => { setClaimingId(item.id); setClaimName(''); setClaimError('') }}
+                  >
+                    Claim This Item
+                  </button>
+                )}
+                {!item.claimed_by && !item.claimable && (
+                  <div className="item-card__no-claim">Contact staff to claim</div>
+                )}
+                {claimingId === item.id && (
+                  <div className="item-card__claim-form">
+                    <input
+                      type="text"
+                      placeholder="Your name *"
+                      value={claimName}
+                      onChange={e => setClaimName(e.target.value)}
+                      autoFocus
+                    />
+                    {claimError && (
+                      <p style={{ fontSize: '0.74rem', color: 'var(--danger)', margin: 0 }}>{claimError}</p>
+                    )}
+                    <div className="item-card__claim-actions">
+                      <button
+                        className="btn btn-primary btn-sm"
+                        style={{ flex: 1 }}
+                        onClick={() => handleClaim(item)}
+                        disabled={claimLoading}
+                      >
+                        {claimLoading ? 'Submitting...' : 'Confirm Claim'}
+                      </button>
+                      <button
+                        className="btn btn-secondary btn-sm"
+                        onClick={() => { setClaimingId(null); setClaimError('') }}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                )}
               </article>
             ))}
           </div>
 
-          {/* Info banner */}
           <div className="info-banner">
             <span className="info-banner__icon">ℹ️</span>
             <div className="info-banner__text">

@@ -55,6 +55,11 @@ export default function AdminPage() {
     fetchAllItems()
   }
 
+  async function handleToggleClaimable(id, current) {
+    await supabase.from('items').update({ claimable: !current }).eq('id', id)
+    fetchAllItems()
+  }
+
   async function handleAddTeacher(e) {
     e.preventDefault()
     setTeacherError('')
@@ -103,8 +108,11 @@ export default function AdminPage() {
   if (loading) return <p style={{ padding: '2rem' }}>Loading...</p>
   if (!user || role !== 'admin') return null
 
+  const claimedCount = items.filter(i => i.claimed_by).length
+
   const stats = [
     { icon: '📦', label: 'Total Items', value: items.length },
+    { icon: '🔔', label: 'Pending Claims', value: claimedCount },
     { icon: '👤', label: 'Staff Accounts', value: teachers.length },
   ]
 
@@ -147,7 +155,7 @@ export default function AdminPage() {
                 : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                     {items.map(item => (
-                      <div key={item.id} className="item-row">
+                      <div key={item.id} className={`item-row${item.claimed_by ? ' item-row--claimed' : ''}`}>
                         {item.image_url && (
                           <img src={item.image_url} alt={item.title} className="item-row__thumb" />
                         )}
@@ -156,10 +164,29 @@ export default function AdminPage() {
                           <p className="item-row__meta">
                             {item.posted_by} · {item.location} · {new Date(item.date_found).toLocaleDateString()}
                           </p>
+                          {item.claimed_by && (
+                            <p className="item-row__claim-info">
+                              Claimed by <strong>{item.claimed_by}</strong>
+                              {item.claimed_at && ` · ${new Date(item.claimed_at).toLocaleString()}`}
+                            </p>
+                          )}
                         </div>
-                        <button onClick={() => handleDeleteItem(item.id)} className="btn btn-sm btn-danger">
-                          Remove
-                        </button>
+                        <div className="item-row__actions">
+                          {item.claimed_by && (
+                            <button onClick={() => handleDeleteItem(item.id)} className="btn btn-sm btn-gold">
+                              Confirm Gone
+                            </button>
+                          )}
+                          <button
+                            onClick={() => handleToggleClaimable(item.id, item.claimable)}
+                            className={`toggle-btn toggle-btn--${item.claimable ? 'on' : 'off'}`}
+                          >
+                            {item.claimable ? '🔓 On' : '🔒 Off'}
+                          </button>
+                          <button onClick={() => handleDeleteItem(item.id)} className="btn btn-sm btn-danger">
+                            Remove
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>
