@@ -17,6 +17,15 @@ export default function BrowsePage() {
 
   useEffect(() => {
     fetchItems()
+
+    const channel = supabase
+      .channel('items-realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'items' }, () => {
+        fetchItems()
+      })
+      .subscribe()
+
+    return () => supabase.removeChannel(channel)
   }, [])
 
   async function fetchItems() {
